@@ -10,22 +10,22 @@ const maxNumberOfMice = 4;
 
 const gameOptions = {
   // floppy gravity, will make floppy fall 
-  floppyGravity: 700,
+  floppyGravity: 600,
 
   // floppy thrust
-  floppyThrustPower: 100,
+  floppyThrustPower: 350,
 
   // floppy speed
-  floppySpeed: 75,
+  floppySpeed: 160,
 
   // minimum mouse height, in pixels, Affects opening position
-  minMouseHeight: 50,
+  minMouseHeight: 170,
 
   // distance range from next pipe, in pixels
   mouseDistance: [220, 280],
 
   // opening range between mice, in pixels
-  mouseHole: [100, 130],
+  mouseHole: [155, 230],
 };
 
 export default new Phaser.Class({
@@ -34,19 +34,26 @@ export default new Phaser.Class({
     Phaser.Scene.call(this, { key: 'floppy' });
     this.score = 0;
   },
-  preload: function preload() {
+  preload: function () {
     this.load.image('background', background);
     this.load.image('floppy', floppyImage);
     this.load.image('mouse', mouseImage);
   },
-  create: function create() {
+  create: function () {
     this.add.image(500, 350, "background");
 
-    this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
+    this.scoreText = this.add.text(100, 10 , '', { fontSize: '32px', fill: '#FFF' });
     this.updateScore(this.score);
-    floppy = this.physics.add.sprite(400, 300, 'floppy');
+
+    floppy = this.physics.add.sprite(200, 300, 'floppy');
+    floppy.setScale(0.5);
     floppy.body.gravity.y = gameOptions.floppyGravity;
     floppy.setCollideWorldBounds(true);
+
+    cursors = this.input.keyboard.createCursorKeys();
+    this.input.on('pointerdown', this.bounce, this);
+    this.input.on('keydown_SPACE', this.bounce, this);
+
 
     this.mouseGroup = this.physics.add.group();
     this.mousePool = [];
@@ -56,21 +63,27 @@ export default new Phaser.Class({
       this.placeMice(false);
     }
     this.mouseGroup.setVelocityX(-gameOptions.floppySpeed);
-    cursors = this.input.keyboard.createCursorKeys();
+
   },
   updateScore: function (increase) {
     this.score += increase;
+    this.scoreText.text = 'Score: ' + this.score;
   },
   placeMice: function (addScore) {
     let rightMost = this.getRightMostMouse();
     let mouseHoleHeight = Phaser.Math.Between(gameOptions.mouseHole[0], gameOptions.mouseHole[1]);
     let mouseHolePosition = Phaser.Math.Between(gameOptions.minMouseHeight + mouseHoleHeight / 2, 650 - gameOptions.minMouseHeight - mouseHoleHeight / 2);
+    // TOP MOUSE
     this.mousePool[0].x = rightMost + this.mousePool[0].getBounds().width + Phaser.Math.Between(gameOptions.mouseDistance[0], gameOptions.mouseDistance[1]);
     this.mousePool[0].y = mouseHolePosition - mouseHoleHeight / 2;
+    this.mousePool[0].setScale(0.75);
     this.mousePool[0].setOrigin(0, 1);
+    // BOTTOM MOUSE
     this.mousePool[1].x = this.mousePool[0].x;
     this.mousePool[1].y = mouseHolePosition + mouseHoleHeight / 2;
+    this.mousePool[1].setScale(0.75);
     this.mousePool[1].setOrigin(0, 0);
+    this.mousePool[1].setFlipY(true);
     this.mousePool = [];
     if (addScore) {
       this.updateScore(1);
@@ -83,10 +96,10 @@ export default new Phaser.Class({
     });
     return rightMostMouse;
   },
-  update: function () {
-    if (cursors.space.isDown || this.input.activePointer.isDown) {
+  bounce: function () {
       floppy.body.velocity.y += -gameOptions.floppyThrustPower;
-    }
+  },
+  update: function () {
     /*
     this.physics.add.collider(this.floppy, this.mouseGroup, function(){
       this.die();
