@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import MainMenu from './scenes/MainMenu';
+import Floppy from './scenes/Floppy';
 import Game from './scenes/Game';
 import Death from './scenes/Death';
 
@@ -8,12 +9,12 @@ const config = {
   width: 1000,
   height: 650,
   physics: {
-    defaul: "arcade",
-    arcase: {
-      gravity: { y: 0, x: 0 },
+    default: "arcade",
+    arcade: {
+      gravity: { y: 0 },
     },
   },
-  scene: [MainMenu, Game, Death]
+  scene: [MainMenu, Floppy, Game, Death]
 };
 
 const game = new Phaser.Game(config);

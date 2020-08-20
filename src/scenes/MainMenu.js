@@ -1,7 +1,6 @@
 import Phaser from "phaser";
-import background from '../assets/cityskyline.png';
+import background from '../assets/softwindows-95-desktop.jpg';
 
-let graphics;
 let cursors;
 
 export default new Phaser.Class({
@@ -22,14 +21,15 @@ export default new Phaser.Class({
     */
 
     this.add.text(350, 300, "Press space to start.")
-    this.add.text(350, 315, "Move with up, down, left, right.")
-    this.add.text(350, 330, "Press spacebar to brake.")
-    this.add.text(350, 345, "Collect all the stars to win.")
+    this.add.text(350, 315, "Press spacebar or click mouse to stay afloat.")
+    this.add.text(350, 330, "Find a computer and load a game.")
+
+
   },
   update: function () {
 
     if (cursors.space.isDown) {
-      this.scene.start('game');
+      this.scene.start('floppy');
     }
   }
 })

@@ -1,88 +1,66 @@
 import Phaser from "phaser";
 // MUSIC import mp3 from "../assets/Orbital\ Colossus.mp3";
-//import background from "../assets/scifi_platform_BG1.jpg";
-//import tiles from "../assets/scifi_platformTiles_32x32.png";
-//import star from "../assets/star.png"
-import { accelerate, decelerate } from "../utils";
+import sky from '../assets/cityskyline.png';
+import hotdogImage from '../assets/hotdog.png';
+import muzzleFlash from '../assets/particles/muzzleflash3.png'
 
-let box;
+let hotdog;
 let cursors;
+let fireParticles;
+const gameOptions = {
+  // hotdog gravity, will make hotdog fall 
+  hotdogGravity: 800,
+
+  // fuel thrust
+  hotdogFuelPower: 100,
+};
 
 export default new Phaser.Class({
   Extends: Phaser.Scene,
   initialize: function () {
     Phaser.Scene.call(this, { key: 'game' });
-    window.GAME = this;
+    this.score = 0;
   },
   preload: function preload() {
-   /* this.load.image("background", background);
-
-    this.load.spritesheet('tiles', tiles, {
-      frameWidth: 32,
-      frameHeight: 32
-    });
-
-    this.load.image("star", star);
-    */
+    this.load.image('background-sky', sky);
+    this.load.image('hotdog', hotdogImage);
+    this.load.image('fire', muzzleFlash)
   },
   create: function create() {
-    /*
-    this.add.image(400, 300, "background");
+    this.add.image(400, 300, "background-sky");
 
-    const stars = this.physics.add.group({
-      key: 'star',
-      repeat: 11,
-      setScale: {x: 0.2, y: 0.2 },
-      setXY: { x:400, y: 300 }
+    this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
+
+    hotdog = this.physics.add.sprite(400, 300, 'hotdog');
+    hotdog.setFlipX(true);
+    hotdog.body.gravity.y = gameOptions.hotdogGravity;
+    hotdog.setCollideWorldBounds(true);
+
+    fireParticles = this.add.particles('fire');
+
+    fireParticles.createEmitter({
+      alpha: { start: 1, end: 0 },
+      scale: { start: 0.15, end: 0.5 },
+      //tint: { start: 0xff945e, end: 0xff945e },
+      speed: 5,
+      accelerationY: -100,
+      angle: { min: -85, max: -95 },
+      rotate: { min: -180, max: 180 },
+      lifespan: { min: 1000, max: 1100 },
+      blendMode: 'ADD',
+      frequency: 110,
+      maxParticles: 10,
+      x: hotdog.x,
+      y: hotdog.y + 65
     });
 
-    stars.children.iterate(function (child) {
-      child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-      child.setVelocityX(150 - Math.random() * 300);
-      child.setVelocityY(150 - Math.random() * 300);
-      child.setBounce(1, 1);
-      child.setCollideWorldBounds(true);
-    });
-*/
     cursors = this.input.keyboard.createCursorKeys();
-/*
-    box = this.physics.add.image(400, 100, "tiles", 15);
 
-    const processCollision = (box, star) => {
-      star.destroy();
-      const starsLeft = stars.countActive();
-      if (starsLeft === 0) {
-        this.scene.start('winscreen');
-      }
-    }
-
-    this.physics.add.collider(
-      stars,
-      box,
-      processCollision,
-      null,
-      this
-    );
-
-
-    box.setBounce(1, 1);
-    box.setCollideWorldBounds(true);
-    */
   },
   update: function () {
-    /*
-    const { velocity } = box.body;
-
-    if (cursors.space.isDown) {
-      const x = decelerate(velocity.x);
-      const y = decelerate(velocity.y);
-      box.setVelocity(x, y)
+    if (cursors.space.isDown || this.input.activePointer.isDown) {
+      //fireParticles.setPosition(hotdog.x, hotdog.y);
+      hotdog.body.velocity.y += -gameOptions.hotdogFuelPower;
     }
-
-    if (cursors.up.isDown) box.setVelocityY(accelerate(velocity.y, -1));
-    if (cursors.right.isDown) box.setVelocityX(accelerate(velocity.x, 1));
-    if (cursors.down.isDown) box.setVelocityY(accelerate(velocity.y, 1));
-    if (cursors.left.isDown) box.setVelocityX(accelerate(velocity.x, -1));
-    */
   }
 });
