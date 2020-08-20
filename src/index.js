@@ -14,7 +14,10 @@ const config = {
       gravity: { y: 0 },
     },
   },
-  scene: [MainMenu, Floppy, Game, Death]
+  scene: [MainMenu, Floppy, Game, Death],
+  audio: {
+    disableWebAudio: true
+  }
 };
 
 const game = new Phaser.Game(config);

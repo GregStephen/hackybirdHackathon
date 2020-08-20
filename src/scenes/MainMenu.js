@@ -21,8 +21,9 @@ export default new Phaser.Class({
     */
 
     this.add.text(350, 300, "Press space to start.")
-    this.add.text(350, 315, "Press spacebar or click mouse to stay afloat.")
+    this.add.text(350, 315, "Click your mouse to stay afloat.")
     this.add.text(350, 330, "Find a computer and load a game.")
+    this.add.text(350, 345, "Don't forget to dodge the mice (mouses?).")
 
 
   },
