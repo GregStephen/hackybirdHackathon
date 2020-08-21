@@ -7,6 +7,7 @@ import compMonitorImage from '../assets/monitor.png';
 let floppy;
 let cursors;
 let monitor;
+let music;
 const maxNumberOfMice = 4;
 const scoreToIncrease = 5;
 const scoreToShowMonitor = 15;
@@ -24,7 +25,7 @@ const gameOptions = {
   // minimum mouse height, in pixels, Affects opening position
   minMouseHeight: 170,
 
-  // distance range from next pipe, in pixels
+  // distance range from next mouse, in pixels
   mouseDistance: [220, 280],
 
   // opening range between mice, in pixels
@@ -37,8 +38,9 @@ export default new Phaser.Class({
     Phaser.Scene.call(this, { key: 'floppy' });
   },
   preload: function () {
-    this.load.audio('theme', 'src/assets/audio/floppytunes.mp3')
-    this.load.audio('floppyDeath', 'src/assets/audio/player_death.wav')
+    this.load.audio('theme', 'src/assets/audio/floppytunes.mp3');
+    this.load.audio('floppyDeath', 'src/assets/audio/player_death.wav');
+    this.load.audio('monitorSound', 'src/assets/audio/monitor.wav');
     this.load.image('background', background);
     this.load.image('floppy', floppyImage);
     this.load.image('mouse', mouseImage);
@@ -48,10 +50,11 @@ export default new Phaser.Class({
     // CREATES OUR SWEET BACKGROUND
     this.add.image(500, 350, "background");
 
-    let music = this.sound.add('theme');
+    music = this.sound.add('theme');
     music.play();
 
     let death = this.sound.add('floppyDeath');
+    
 
     // HANDLES ALL THE SCORE
     this.score = 0;
@@ -67,9 +70,6 @@ export default new Phaser.Class({
     // HANDLES THE MOVEMENT OF OUR HERO
     cursors = this.input.keyboard.createCursorKeys();
     this.input.on('pointerdown', this.bounce, this);
-    if (cursors.space.isDown){
-      this.bounce();
-    }
 
     // CREATES OUR MICE(MOUSES)
     this.mouseGroup = this.physics.add.group();
@@ -90,7 +90,14 @@ export default new Phaser.Class({
     // OR ELSE YOU DIE
     const die = () => {
       music.stop();
-      this.scene.start('death');
+      floppy.destroy();
+      let timedEvent = this.time.addEvent({
+        delay: 250,
+        callback: () => {
+          this.scene.start('death', { score: this.score });
+        },
+        callbackScope: this
+      })
     }
   },
   // WITH EVERY ROW THAT PASSES YOUR SCORE INCREASES
@@ -119,7 +126,10 @@ export default new Phaser.Class({
       monitor = this.physics.add.sprite(monitorx, monitory, 'compMonitor');
       monitor.setOrigin(0, 0);
       monitor.setVelocityX(-gameOptions.floppySpeed);
+      let monitorSound = this.sound.add('monitorSound');
       this.physics.add.collider(floppy, monitor, function(){
+        monitorSound.play();
+        floppy.destroy();
         loadGame();
       }); 
     }
@@ -138,7 +148,15 @@ export default new Phaser.Class({
 
     // IF THEY HIT THE MONITOR IT LOADS THE NEXT GAME
     const loadGame = () => {
-      this.scene.start('game');
+      music.stop();
+      let gameLoad = this.time.addEvent({
+        delay: 4000,
+        callback: () => {
+          this.scene.start('game', { score: this.score });
+        },
+        callbackScope: this
+      })
+
     }
   },
   // FUNCTION THAT RETURNS THE ROW OF THE RIGHTMOST MOUSE

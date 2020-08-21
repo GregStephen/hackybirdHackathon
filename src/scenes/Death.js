@@ -8,14 +8,17 @@ export default new Phaser.Class({
   initialize: function () {
     Phaser.Scene.call(this, { key: 'death' });
   },
+  init: function (data) {
+    this.score = data.score;
+  },
   create: function() {
     cursors = this.input.keyboard.createCursorKeys();
-
     graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
     graphics.fillRect(0, 0, 800, 600);
 
-    this.add.text(275, 300, "You done died! Press space to restart.")
+    this.add.text(275, 300, "You done died! Press space to go back to menu.")
+    this.add.text(275, 315, "FINAL SCORE: " + this.score);
   },
   update: function () {
 
