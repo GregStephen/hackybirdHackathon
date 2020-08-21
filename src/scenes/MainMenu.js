@@ -15,10 +15,11 @@ export default new Phaser.Class({
     this.add.image(500, 350, "background");
     cursors = this.input.keyboard.createCursorKeys();
 
-    this.add.text(350, 300, "Press space to start.")
-    this.add.text(350, 315, "Press space or click your mouse to stay afloat.")
-    this.add.text(350, 330, "Find a computer and load a game.")
-    this.add.text(350, 345, "Don't forget to dodge the mice (mouses?).")
+    this.add.text(350, 200, "FLOPPY").setFontSize(108);
+    this.add.text(350, 300, "Press space to start.");
+    this.add.text(350, 315, "Press space or click your mouse to stay afloat.");
+    this.add.text(350, 330, "Find a computer and load a game.");
+    this.add.text(350, 345, "Don't forget to dodge the mice (mouses?).");
   },
   update: function () {
 
