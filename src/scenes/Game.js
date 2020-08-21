@@ -1,6 +1,5 @@
 import Phaser from "phaser";
-// MUSIC import mp3 from "../assets/Orbital\ Colossus.mp3";
-import sky from '../assets/cityskyline.png';
+import sky from '../assets/table.jpg';
 import hotdogImage from '../assets/hotdog.png';
 import forkImage from '../assets/fork.png';
 import ketchupImage from '../assets/ketchup.png';
@@ -13,6 +12,7 @@ let cursors;
 let theme;
 const maxNumberOfForks = 4;
 const scoreToIncrease = 5;
+const ketchupBonus = 20;
 
 //let fireParticles;
 const gameOptions = {
@@ -23,17 +23,23 @@ const gameOptions = {
   hotdogFuelPower: 350,
 
   // hot dog speed
-  hotdogSpeed: 160,
+  hotdogSpeed: 175,
 
   // minimum fork height, in pixels, Affects opening position
   minForkHeight: 100,
 
   // distance range from next fork, in pixels
-  forkDistance: [220, 280],
+  forkDistance: [225, 290],
 
   // opening range between forks, in pixels
   forkHole: [150, 250],
 };
+
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
 
 export default new Phaser.Class({
   Extends: Phaser.Scene,
@@ -52,16 +58,23 @@ export default new Phaser.Class({
 
   },
   create: function create() {
-    this.add.image(400, 300, "background-sky");
+    // MAKES THE BG FULL SCREEN
+    let image = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background-sky')
+    let scaleX = this.cameras.main.width / image.width
+    let scaleY = this.cameras.main.height / image.height
+    let scale = Math.max(scaleX, scaleY)
+    image.setScale(scale).setScrollFactor(0)
 
+    // BACKGROUND MUSIC
     theme = new Audio(heroTheme);
     theme.play();
 
+    // YA DONE DIED MUSIC 
     let death = new Audio(deathSound);
 
     // HANDLES THE SCORE
     this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
-    this.updateScore(this.score);
+    //this.updateScore(this.score);
 
     // CREATES THE HOTDOG
     hotdog = this.physics.add.sprite(150, 300, 'hotdog');
@@ -73,6 +86,9 @@ export default new Phaser.Class({
     // HANDLES THE MOVEMENT OF THE HOTDOG
     cursors = this.input.keyboard.createCursorKeys();
     this.input.on('pointerdown', this.bounce, this);
+    this.input.keyboard.on("keydown-SPACE", () => {
+      this.bounce();
+    });
 
     // CREATES OUR FORKS
     this.forkGroup = this.physics.add.group();
@@ -103,24 +119,28 @@ export default new Phaser.Class({
         callbackScope: this
       })
     }
-    /*fireParticles = this.add.particles('fire');
-
-    fireParticles.createEmitter({
-      alpha: { start: 1, end: 0 },
-      scale: { start: 0.15, end: 0.5 },
-      //tint: { start: 0xff945e, end: 0xff945e },
-      speed: 5,
-      accelerationY: -100,
-      angle: { min: -85, max: -95 },
-      rotate: { min: -180, max: 180 },
-      lifespan: { min: 1000, max: 1100 },
-      blendMode: 'ADD',
-      frequency: 110,
-      maxParticles: 10,
-      x: hotdog.x,
-      y: hotdog.y + 65
-    });
-*/
+    // SETS UP KETCHUPS
+    this.ketchupGroup = this.physics.add.group();
+    this.ketchupGroup.setVelocityX(-gameOptions.hotdogSpeed);
+    let ketchupTime = this.time.addEvent({
+      delay: 5000,
+      callback: () => {
+        this.createKetchup();
+      },
+      loop: true
+    })
+  },
+  createKetchup: function () {
+    let ketchup = this.ketchupGroup.create(1000, getRandomInt(100, 500), 'ketchup');
+  //  if (!ketchup) return;
+    ketchup.setScale(0.1);
+  //  ketchup.enableBody(true, 1000, getRandomInt(100, 500), true, true);
+    ketchup.setVelocityX(-gameOptions.hotdogSpeed);
+    this.physics.add.overlap(hotdog, ketchup, () => this.collectKetchup(ketchup), null, this);
+  },
+  collectKetchup: function (ketchup) {
+    ketchup.destroy();
+    this.updateScore(ketchupBonus);
   },
   // WITH EVERY ROW THAT PASSES YOUR SCORE INCREASES
   updateScore: function (increase) {
@@ -162,18 +182,17 @@ export default new Phaser.Class({
   },
   // THE FUNCTION THAT MAKES YA BOY BOUNCE
   bounce: function () {
-    console.error('bounced', hotdog.x, hotdog.y);
     hotdog.body.velocity.y += -gameOptions.hotdogFuelPower;
   },
-  update: function () {  
+  update: function () {
     // PLACES MORE FORK ROWS IN POOL AND MAKES MORE FORKS IF NEEDED
-    this.forkGroup.getChildren().forEach(function(fork){
-      if(fork.getBounds().right < 0){
+    this.forkGroup.getChildren().forEach(function (fork) {
+      if (fork.getBounds().right < 0) {
         this.forkPool.push(fork);
-        if(this.forkPool.length == 2){
+        if (this.forkPool.length == 2) {
           this.placeForks(true);
         }
       }
-    }, this) 
+    }, this)
   }
 });

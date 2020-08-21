@@ -70,6 +70,9 @@ export default new Phaser.Class({
     // HANDLES THE MOVEMENT OF OUR HERO
     cursors = this.input.keyboard.createCursorKeys();
     this.input.on('pointerdown', this.bounce, this);
+    this.input.keyboard.on("keydown-SPACE", () => {
+      this.bounce();
+    });
 
     // CREATES OUR MICE(MOUSES)
     this.mouseGroup = this.physics.add.group();
@@ -153,7 +156,7 @@ export default new Phaser.Class({
       let gameLoad = this.time.addEvent({
         delay: 4000,
         callback: () => {
-          this.scene.start('game', { score: this.score });
+          this.scene.start('picnicMenu', { score: this.score });
         },
         callbackScope: this
       })
