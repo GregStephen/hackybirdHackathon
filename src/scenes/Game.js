@@ -5,14 +5,16 @@ import forkImage from '../assets/fork.png';
 import ketchupImage from '../assets/ketchup.png';
 import heroTheme from '../assets/audio/hotdogHero.ogg';
 import deathSound from '../assets/audio/player_death.wav';
-import muzzleFlash from '../assets/particles/muzzleflash3.png'
+import ketchupPickup from '../assets/audio/pickup.wav';
 
 let hotdog;
 let cursors;
 let theme;
+let ketchupPickupSound;
 const maxNumberOfForks = 4;
 const scoreToIncrease = 5;
 const ketchupBonus = 20;
+
 
 //let fireParticles;
 const gameOptions = {
@@ -120,6 +122,7 @@ export default new Phaser.Class({
       })
     }
     // SETS UP KETCHUPS
+    ketchupPickupSound = new Audio(ketchupPickup);
     this.ketchupGroup = this.physics.add.group();
     this.ketchupGroup.setVelocityX(-gameOptions.hotdogSpeed);
     let ketchupTime = this.time.addEvent({
@@ -139,6 +142,7 @@ export default new Phaser.Class({
     this.physics.add.overlap(hotdog, ketchup, () => this.collectKetchup(ketchup), null, this);
   },
   collectKetchup: function (ketchup) {
+    ketchupPickupSound.play();
     ketchup.destroy();
     this.updateScore(ketchupBonus);
   },
