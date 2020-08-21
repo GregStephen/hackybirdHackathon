@@ -16,9 +16,10 @@ export default new Phaser.Class({
     graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
     graphics.fillRect(0, 0, 800, 600);
+    this.add.text(200, 200, "FINAL SCORE: " + this.score).setFontSize(75);
+    this.add.text(275, 300, "You done died!")
+    this.add.text(275, 325, "Press space to go back to menu.")
 
-    this.add.text(275, 300, "You done died! Press space to go back to menu.")
-    this.add.text(275, 315, "FINAL SCORE: " + this.score);
   },
   update: function () {
 

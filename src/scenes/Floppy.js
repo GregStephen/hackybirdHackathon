@@ -46,7 +46,7 @@ export default new Phaser.Class({
   },
   preload: function () {
     if (this.difficulty === 'hard'){
-      gameOptions.floppySpeed = 300;
+      gameOptions.floppySpeed = 275;
       gameOptions.mouseDistance = [180, 250];
       gameOptions.minMouseHeight = 150,
       gameOptions.mouseHole = [125, 200];
@@ -55,9 +55,9 @@ export default new Phaser.Class({
     }
     else if (this.difficulty === 'easy'){
       gameOptions.floppySpeed = 160;
-      gameOptions.mouseDistance = [190, 280];
+      gameOptions.mouseDistance = [190, 270];
       gameOptions.minMouseHeight = 170,
-      gameOptions.mouseHole = [175, 255];
+      gameOptions.mouseHole = [160, 245];
       scoreToIncrease = 5;
       scoreToShowMonitor = 15;
     }
