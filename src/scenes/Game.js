@@ -60,7 +60,6 @@ export default new Phaser.Class({
     let death = this.sound.add('death');
 
     // HANDLES THE SCORE
-    this.score = 0;
     this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
     this.updateScore(this.score);
 

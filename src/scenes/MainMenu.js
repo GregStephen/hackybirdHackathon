@@ -30,7 +30,7 @@ export default new Phaser.Class({
   update: function () {
 
     if (cursors.space.isDown) {
-      this.scene.start('game');
+      this.scene.start('floppy');
     }
   }
 })
