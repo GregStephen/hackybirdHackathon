@@ -3,6 +3,9 @@ import background from '../assets/softwindows-95-desktop.jpg';
 import floppyImage from '../assets/floppy.png';
 import mouseImage from '../assets/mouse.png';
 import compMonitorImage from '../assets/monitor.png';
+import themeMusic from '../assets/audio/floppytunes.mp3';
+import deathSound from '../assets/audio/player_death.wav';
+import monitorSound from '../assets/audio/monitor.wav';
 
 let floppy;
 let cursors;
@@ -11,7 +14,7 @@ let music;
 const maxNumberOfMice = 4;
 const scoreToIncrease = 5;
 const scoreToShowMonitor = 15;
-
+const monitory = 380;
 const gameOptions = {
   // floppy gravity, will make floppy fall 
   floppyGravity: 600,
@@ -26,7 +29,7 @@ const gameOptions = {
   minMouseHeight: 170,
 
   // distance range from next mouse, in pixels
-  mouseDistance: [220, 280],
+  mouseDistance: [190, 280],
 
   // opening range between mice, in pixels
   mouseHole: [125, 230],
@@ -38,9 +41,6 @@ export default new Phaser.Class({
     Phaser.Scene.call(this, { key: 'floppy' });
   },
   preload: function () {
-    this.load.audio('theme', 'src/assets/audio/floppytunes.mp3');
-    this.load.audio('floppyDeath', 'src/assets/audio/player_death.wav');
-    this.load.audio('monitorSound', 'src/assets/audio/monitor.wav');
     this.load.image('background', background);
     this.load.image('floppy', floppyImage);
     this.load.image('mouse', mouseImage);
@@ -50,15 +50,15 @@ export default new Phaser.Class({
     // CREATES OUR SWEET BACKGROUND
     this.add.image(500, 350, "background");
 
-    music = this.sound.add('theme');
-    music.play();
+    let theme = new Audio(themeMusic);
+    theme.play();
 
-    let death = this.sound.add('floppyDeath');
-    
+    let death = new Audio(deathSound);
+
 
     // HANDLES ALL THE SCORE
     this.score = 0;
-    this.scoreText = this.add.text(100, 10 , '', { fontSize: '32px', fill: '#FFF' });
+    this.scoreText = this.add.text(100, 10, '', { fontSize: '32px', fill: '#FFF' });
     this.updateScore(this.score);
 
     // CREATES OUR HERO
@@ -80,16 +80,17 @@ export default new Phaser.Class({
       this.placeMice(false);
     }
     this.mouseGroup.setVelocityX(-gameOptions.floppySpeed);
-    
+
     // DON'T HIT THE MICE
-    this.physics.add.collider(floppy, this.mouseGroup, function(){
+    this.physics.add.collider(floppy, this.mouseGroup, function () {
       death.play();
       die();
-    });    
+    });
 
     // OR ELSE YOU DIE
     const die = () => {
-      music.stop();
+      theme.pause();
+      theme.currentTime = 0
       floppy.destroy();
       let timedEvent = this.time.addEvent({
         delay: 250,
@@ -120,18 +121,17 @@ export default new Phaser.Class({
     this.mousePool[0].setOrigin(0, 1);
     // SHOWS THE MONITOR INSTEAD OF THE BOTTOM MOUSE ONCE THEY REACH A CERTAIN SCORE
     // RESHOWS IF THEY MISS IT ONCE THEY HIT THAT SCORE AGAIN
-    if(this.score !== 0 && this.score % scoreToShowMonitor === 0) {
+    if (this.score !== 0 && this.score % scoreToShowMonitor === 0) {
       let monitorx = this.mousePool[0].x;
-      let monitory = mouseHolePosition + mouseHoleHeight / 2;
       monitor = this.physics.add.sprite(monitorx, monitory, 'compMonitor');
       monitor.setOrigin(0, 0);
       monitor.setVelocityX(-gameOptions.floppySpeed);
-      let monitorSound = this.sound.add('monitorSound');
-      this.physics.add.collider(floppy, monitor, function(){
-        monitorSound.play();
+      let monitorEffect = new Audio(monitorSound)
+      this.physics.add.collider(floppy, monitor, function () {
+        monitorEffect.play();
         floppy.destroy();
         loadGame();
-      }); 
+      });
     }
     else {
       // BOTTOM MOUSE
@@ -148,7 +148,8 @@ export default new Phaser.Class({
 
     // IF THEY HIT THE MONITOR IT LOADS THE NEXT GAME
     const loadGame = () => {
-      music.stop();
+      theme.pause();
+      theme.currentTime = 0
       let gameLoad = this.time.addEvent({
         delay: 4000,
         callback: () => {
@@ -162,24 +163,24 @@ export default new Phaser.Class({
   // FUNCTION THAT RETURNS THE ROW OF THE RIGHTMOST MOUSE
   getRightMostMouse: function () {
     let rightMostMouse = 0;
-    this.mouseGroup.getChildren().forEach(function(mouse){
+    this.mouseGroup.getChildren().forEach(function (mouse) {
       rightMostMouse = Math.max(rightMostMouse, mouse.x);
     });
     return rightMostMouse;
   },
   // THE FUNCTION THAT MAKES YA BOY BOUNCE
   bounce: function () {
-      floppy.body.velocity.y += -gameOptions.floppyThrustPower;
+    floppy.body.velocity.y += -gameOptions.floppyThrustPower;
   },
-  update: function () {  
+  update: function () {
     // PLACES MORE MOUSE ROWS IN POOL AND MAKES MORE MICE IF NEEDED
-    this.mouseGroup.getChildren().forEach(function(mouse){
-      if(mouse.getBounds().right < 0){
+    this.mouseGroup.getChildren().forEach(function (mouse) {
+      if (mouse.getBounds().right < 0) {
         this.mousePool.push(mouse);
-        if(this.mousePool.length == 2){
+        if (this.mousePool.length == 2) {
           this.placeMice(true);
         }
       }
-    }, this) 
+    }, this)
   },
 });

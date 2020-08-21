@@ -4,6 +4,8 @@ import sky from '../assets/cityskyline.png';
 import hotdogImage from '../assets/hotdog.png';
 import forkImage from '../assets/fork.png';
 import ketchupImage from '../assets/ketchup.png';
+import heroTheme from '../assets/audio/hotdogHero.ogg';
+import deathSound from '../assets/audio/player_death.wav';
 import muzzleFlash from '../assets/particles/muzzleflash3.png'
 
 let hotdog;
@@ -42,8 +44,6 @@ export default new Phaser.Class({
     this.score = data.score;
   },
   preload: function () {
-    this.load.audio('death', 'src/assets/audio/player_death.wav');
-    this.load.audio('heroTheme', 'src/assets/audio/hotdogHero.ogg');
     this.load.image('background-sky', sky);
     this.load.image('hotdog', hotdogImage);
     this.load.image('fork', forkImage);
@@ -54,10 +54,10 @@ export default new Phaser.Class({
   create: function create() {
     this.add.image(400, 300, "background-sky");
 
-    theme = this.sound.add('heroTheme');
+    theme = new Audio(heroTheme);
     theme.play();
 
-    let death = this.sound.add('death');
+    let death = new Audio(deathSound);
 
     // HANDLES THE SCORE
     this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
@@ -92,7 +92,8 @@ export default new Phaser.Class({
 
     // OR ELSE YOU DIE
     const die = () => {
-      theme.stop();
+      theme.pause();
+      theme.currentTime = 0
       hotdog.destroy();
       let timedEvent = this.time.addEvent({
         delay: 250,
