@@ -12,9 +12,10 @@ let cursors;
 let monitor;
 let theme;
 const maxNumberOfMice = 4;
-const scoreToIncrease = 5;
-const scoreToShowMonitor = 15;
+let scoreToIncrease = 5;
+let scoreToShowMonitor = 15;
 const monitory = 380;
+
 const gameOptions = {
   // floppy gravity, will make floppy fall 
   floppyGravity: 600,
@@ -32,7 +33,7 @@ const gameOptions = {
   mouseDistance: [190, 280],
 
   // opening range between mice, in pixels
-  mouseHole: [125, 230],
+  mouseHole: [175, 250],
 };
 
 export default new Phaser.Class({
@@ -40,13 +41,33 @@ export default new Phaser.Class({
   initialize: function () {
     Phaser.Scene.call(this, { key: 'floppy' });
   },
+  init: function (data) {
+    this.difficulty = data.diff;
+  },
   preload: function () {
+    if (this.difficulty === 'hard'){
+      gameOptions.floppySpeed = 300;
+      gameOptions.mouseDistance = [180, 250];
+      gameOptions.minMouseHeight = 150,
+      gameOptions.mouseHole = [125, 200];
+      scoreToIncrease = 10;
+      scoreToShowMonitor = 40;
+    }
+    else if (this.difficulty === 'easy'){
+      gameOptions.floppySpeed = 160;
+      gameOptions.mouseDistance = [190, 280];
+      gameOptions.minMouseHeight = 170,
+      gameOptions.mouseHole = [175, 255];
+      scoreToIncrease = 5;
+      scoreToShowMonitor = 15;
+    }
     this.load.image('background', background);
     this.load.image('floppy', floppyImage);
     this.load.image('mouse', mouseImage);
     this.load.image('compMonitor', compMonitorImage);
   },
   create: function () {
+
     // CREATES OUR SWEET BACKGROUND
     this.add.image(500, 350, "background");
 
