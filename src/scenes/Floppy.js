@@ -10,7 +10,7 @@ import monitorSound from '../assets/audio/monitor.wav';
 let floppy;
 let cursors;
 let monitor;
-let music;
+let theme;
 const maxNumberOfMice = 4;
 const scoreToIncrease = 5;
 const scoreToShowMonitor = 15;
@@ -50,7 +50,7 @@ export default new Phaser.Class({
     // CREATES OUR SWEET BACKGROUND
     this.add.image(500, 350, "background");
 
-    let theme = new Audio(themeMusic);
+    theme = new Audio(themeMusic);
     theme.play();
 
     let death = new Audio(deathSound);
