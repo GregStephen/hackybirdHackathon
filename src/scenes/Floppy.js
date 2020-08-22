@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import background from '../assets/softwindows-95-desktop.jpg';
-import floppyImage from '../assets/floppy.png';
+import floppyImage from '../assets/floppy-disk.png';
 import mouseImage from '../assets/mouse.png';
 import compMonitorImage from '../assets/monitor.png';
 import themeMusic from '../assets/audio/floppytunes.mp3';
@@ -87,7 +87,7 @@ export default new Phaser.Class({
 
     // CREATES OUR HERO
     floppy = this.physics.add.sprite(200, 300, 'floppy');
-    floppy.setScale(0.5);
+    floppy.setScale(0.15);
     floppy.setCollideWorldBounds(true);
 
 
