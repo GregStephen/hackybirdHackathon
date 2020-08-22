@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import GameOptions from '../utils/GameOptions';
 import background from '../assets/softwindows-95-desktop.jpg';
 import floppyImage from '../assets/floppy-disk.png';
 import mouseImage from '../assets/mouse.png';
@@ -8,36 +9,13 @@ import deathSound from '../assets/audio/player_death.wav';
 import monitorSound from '../assets/audio/monitor.wav';
 
 let floppy;
-let cursors;
 let monitor;
 let mouseGroup;
 let theme;
+let monitorEffect;
 let gameStarted;
-const maxNumberOfMice = 4;
-let scoreToIncrease = 5;
-let scoreToShowMonitor = 15;
+let gameOptions;
 const monitory = 380;
-
-
-const gameOptions = {
-  // floppy gravity, will make floppy fall 
-  floppyGravity: 600,
-
-  // floppy thrust
-  floppyThrustPower: 350,
-
-  // floppy speed
-  floppySpeed: 160,
-
-  // minimum mouse height, in pixels, Affects opening position
-  minMouseHeight: 170,
-
-  // distance range from next mouse, in pixels
-  mouseDistance: [190, 280],
-
-  // opening range between mice, in pixels
-  mouseHole: [175, 250],
-};
 
 export default new Phaser.Class({
   Extends: Phaser.Scene,
@@ -48,22 +26,15 @@ export default new Phaser.Class({
     this.difficulty = data.diff;
   },
   preload: function () {
+    // CHANGES OPTIONS TO MAKE GAME MORE DIFFICULT IF HARD WAS SELECTED
     if (this.difficulty === 'hard'){
-      gameOptions.floppySpeed = 275;
-      gameOptions.mouseDistance = [180, 250];
-      gameOptions.minMouseHeight = 150,
-      gameOptions.mouseHole = [125, 200];
-      scoreToIncrease = 10;
-      scoreToShowMonitor = 40;
+      gameOptions = GameOptions.hardFloppyGameOptions;
     }
+    // CHANGES OPTIONS TO MAKE GAME LESS DIFFICULT IF EASY WAS SELECTED
     else if (this.difficulty === 'easy'){
-      gameOptions.floppySpeed = 160;
-      gameOptions.mouseDistance = [190, 270];
-      gameOptions.minMouseHeight = 170,
-      gameOptions.mouseHole = [160, 245];
-      scoreToIncrease = 5;
-      scoreToShowMonitor = 15;
+      gameOptions = GameOptions.easyFloppyGameOptions;
     }
+    // LOADS ALL THE IMAGES YA NEED
     this.load.image('background', background);
     this.load.image('floppy', floppyImage);
     this.load.image('mouse', mouseImage);
@@ -92,7 +63,6 @@ export default new Phaser.Class({
 
 
     // HANDLES THE MOVEMENT OF OUR HERO
-    cursors = this.input.keyboard.createCursorKeys();
     this.input.on('pointerdown', this.bounce, this);
     this.input.keyboard.on("keydown-SPACE", () => {
       this.bounce();
@@ -102,7 +72,7 @@ export default new Phaser.Class({
 
       mouseGroup = this.physics.add.group();
       this.mousePool = [];
-      for (let i = 0; i < maxNumberOfMice; i++) {
+      for (let i = 0; i < gameOptions.maxNumberOfMice; i++) {
         this.mousePool.push(mouseGroup.create(0, 0, 'mouse'));
         this.mousePool.push(mouseGroup.create(0, 0, 'mouse'));
         if (i === 0) {
@@ -162,13 +132,13 @@ export default new Phaser.Class({
     this.mousePool[0].setOrigin(0, 1);
     // SHOWS THE MONITOR INSTEAD OF THE BOTTOM MOUSE ONCE THEY REACH A CERTAIN SCORE
     // RESHOWS IF THEY MISS IT ONCE THEY HIT THAT SCORE AGAIN
-    if (this.score !== 0 && this.score % scoreToShowMonitor === 0) {
+    if (this.score !== 0 && this.score % gameOptions.scoreToShowMonitor === 0) {
       let monitorx = this.mousePool[0].x;
       monitor = this.physics.add.sprite(monitorx, monitory, 'compMonitor');
       monitor.setOrigin(0, 0);
       monitor.setVelocityX(-gameOptions.floppySpeed);
       monitor.body.immovable = true;
-      let monitorEffect = new Audio(monitorSound)
+      monitorEffect = new Audio(monitorSound)
       this.physics.add.collider(floppy, monitor, function () {
         monitorEffect.play();
         floppy.destroy();
@@ -187,7 +157,7 @@ export default new Phaser.Class({
     }
     this.mousePool = [];
     if (addScore) {
-      this.updateScore(scoreToIncrease);
+      this.updateScore(gameOptions.scoreToIncrease);
     }
 
     // IF THEY HIT THE MONITOR IT LOADS THE NEXT GAME
@@ -198,6 +168,7 @@ export default new Phaser.Class({
         delay: 4000,
         callback: () => {
           this.scene.start('picnicMenu', { score: this.score });
+          monitorEffect.pause();
         },
         callbackScope: this
       })
@@ -224,7 +195,7 @@ export default new Phaser.Class({
     mouseGroup.getChildren().forEach(function (mouse) {
       if (mouse.getBounds().right < 0) {
         this.mousePool.push(mouse);
-        if (this.mousePool.length == 2) {
+        if (this.mousePool.length == gameOptions.maxNumberOfMice / 2) {
           this.placeMice(true, false);
         }
       }

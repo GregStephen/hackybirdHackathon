@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import sky from '../assets/table.jpg';
 import hotdogImage from '../assets/hotdog.png';
 import forkImage from '../assets/fork.png';
-import ketchupImage from '../assets/ketchup.png';
+import ketchupImage from '../assets/ketchup2.png';
 import heroTheme from '../assets/audio/hotdogHero.ogg';
 import deathSound from '../assets/audio/player_death.wav';
 import ketchupPickup from '../assets/audio/pickup.wav';
@@ -62,6 +62,7 @@ export default new Phaser.Class({
 
   },
   create: function create() {
+    gameStarted = false;
     // MAKES THE BG FULL SCREEN
     let image = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background-sky')
     let scaleX = this.cameras.main.width / image.width
@@ -78,7 +79,6 @@ export default new Phaser.Class({
 
     // HANDLES THE SCORE
     this.scoreText = this.add.text(100, 16, 'score: ' + this.score, { fontSize: '32px', fill: '#000' });
-    //this.updateScore(this.score);
 
     // CREATES THE HOTDOG
     hotdog = this.physics.add.sprite(150, 300, 'hotdog');
@@ -142,7 +142,7 @@ export default new Phaser.Class({
   createKetchup: function () {
     let ketchup = this.ketchupGroup.create(1000, getRandomInt(100, 500), 'ketchup');
   //  if (!ketchup) return;
-    ketchup.setScale(0.1);
+    ketchup.setScale(0.75);
   //  ketchup.enableBody(true, 1000, getRandomInt(100, 500), true, true);
     ketchup.setVelocityX(-gameOptions.hotdogSpeed);
     this.physics.add.overlap(hotdog, ketchup, () => this.collectKetchup(ketchup), null, this);
