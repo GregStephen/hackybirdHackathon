@@ -10,6 +10,8 @@ import ketchupPickup from '../assets/audio/pickup.wav';
 let hotdog;
 let cursors;
 let theme;
+let gameStarted;
+let forkGroup;
 let ketchupPickupSound;
 const maxNumberOfForks = 4;
 const scoreToIncrease = 5;
@@ -82,7 +84,6 @@ export default new Phaser.Class({
     hotdog = this.physics.add.sprite(150, 300, 'hotdog');
     hotdog.setFlipX(true);
     hotdog.setScale(0.5);
-    hotdog.body.gravity.y = gameOptions.hotdogGravity;
     hotdog.setCollideWorldBounds(true);
 
     // HANDLES THE MOVEMENT OF THE HOTDOG
@@ -93,17 +94,22 @@ export default new Phaser.Class({
     });
 
     // CREATES OUR FORKS
-    this.forkGroup = this.physics.add.group();
+    forkGroup = this.physics.add.group();
     this.forkPool = [];
     for (let i = 0; i < maxNumberOfForks; i++) {
-      this.forkPool.push(this.forkGroup.create(0, 0, 'fork'));
-      this.forkPool.push(this.forkGroup.create(0, 0, 'fork'));
-      this.placeForks(false);
+      this.forkPool.push(forkGroup.create(0, 0, 'fork'));
+      this.forkPool.push(forkGroup.create(0, 0, 'fork'));
+      if (i === 0) {
+        this.placeForks(false, true);
+      }
+      else {
+        this.placeForks(false, false);
+      }
     }
-    this.forkGroup.setVelocityX(-gameOptions.hotdogSpeed);
+    forkGroup.setVelocityX(-gameOptions.hotdogSpeed);
 
     // DON'T HIT THE FORKS
-    this.physics.add.collider(hotdog, this.forkGroup, function () {
+    this.physics.add.collider(hotdog, forkGroup, function () {
       death.play();
       die();
     });
@@ -155,13 +161,20 @@ export default new Phaser.Class({
   // THE ORIGINAL FORKS WOULD PASS IN FALSE TO NOT INCREASE SCORE
   // EVERY NEW ROW OF FORKS WOULD PASS TRUE WHICH WOULD INCREASE SCORE
   // SINCE THEY WERE CREATED BECAUSE ANOTHER ROW PASSED
-  placeForks: function (addScore) {
+  placeForks: function (addScore, first) {
     let rightMost = this.getRightMostFork();
     let forkHoleHeight = Phaser.Math.Between(gameOptions.forkHole[0], gameOptions.forkHole[1]);
     let forkHolePosition = Phaser.Math.Between(gameOptions.minForkHeight + forkHoleHeight / 2, 650 - gameOptions.minForkHeight - forkHoleHeight / 2);
     // TOP fork
-    this.forkPool[0].x = rightMost + this.forkPool[0].getBounds().width + Phaser.Math.Between(gameOptions.forkDistance[0], gameOptions.forkDistance[1]);
-    this.forkPool[0].y = forkHolePosition - forkHoleHeight / 2;
+    if (first) {
+      this.forkPool[0].x = 1000;
+      this.forkPool[0].y = forkHolePosition - forkHoleHeight / 2;
+    }
+    else {    
+      this.forkPool[0].x = rightMost + this.forkPool[0].getBounds().width + Phaser.Math.Between(gameOptions.forkDistance[0], gameOptions.forkDistance[1]);
+      this.forkPool[0].y = forkHolePosition - forkHoleHeight / 2;
+    }
+
     this.forkPool[0].setScale(0.75);
     this.forkPool[0].setOrigin(0, 1);
     this.forkPool[0].setFlipY(true);
@@ -179,22 +192,26 @@ export default new Phaser.Class({
   // FUNCTION THAT RETURNS THE ROW OF THE RIGHTMOST FORK
   getRightMostFork: function () {
     let rightMostFork = 0;
-    this.forkGroup.getChildren().forEach(function (fork) {
+    forkGroup.getChildren().forEach(function (fork) {
       rightMostFork = Math.max(rightMostFork, fork.x);
     });
     return rightMostFork;
   },
   // THE FUNCTION THAT MAKES YA BOY BOUNCE
   bounce: function () {
+    if (!gameStarted) {
+      gameStarted = true;
+      hotdog.body.gravity.y = gameOptions.hotdogGravity;
+    }
     hotdog.body.velocity.y += -gameOptions.hotdogFuelPower;
   },
   update: function () {
     // PLACES MORE FORK ROWS IN POOL AND MAKES MORE FORKS IF NEEDED
-    this.forkGroup.getChildren().forEach(function (fork) {
+    forkGroup.getChildren().forEach(function (fork) {
       if (fork.getBounds().right < 0) {
         this.forkPool.push(fork);
         if (this.forkPool.length == 2) {
-          this.placeForks(true);
+          this.placeForks(true, false);
         }
       }
     }, this)

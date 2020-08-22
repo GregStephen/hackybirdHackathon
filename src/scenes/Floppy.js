@@ -10,11 +10,14 @@ import monitorSound from '../assets/audio/monitor.wav';
 let floppy;
 let cursors;
 let monitor;
+let mouseGroup;
 let theme;
+let gameStarted;
 const maxNumberOfMice = 4;
 let scoreToIncrease = 5;
 let scoreToShowMonitor = 15;
 const monitory = 380;
+
 
 const gameOptions = {
   // floppy gravity, will make floppy fall 
@@ -67,7 +70,7 @@ export default new Phaser.Class({
     this.load.image('compMonitor', compMonitorImage);
   },
   create: function () {
-
+    gameStarted = false;
     // CREATES OUR SWEET BACKGROUND
     this.add.image(500, 350, "background");
 
@@ -85,8 +88,8 @@ export default new Phaser.Class({
     // CREATES OUR HERO
     floppy = this.physics.add.sprite(200, 300, 'floppy');
     floppy.setScale(0.5);
-    floppy.body.gravity.y = gameOptions.floppyGravity;
     floppy.setCollideWorldBounds(true);
+
 
     // HANDLES THE MOVEMENT OF OUR HERO
     cursors = this.input.keyboard.createCursorKeys();
@@ -96,17 +99,24 @@ export default new Phaser.Class({
     });
 
     // CREATES OUR MICE(MOUSES)
-    this.mouseGroup = this.physics.add.group();
-    this.mousePool = [];
-    for (let i = 0; i < maxNumberOfMice; i++) {
-      this.mousePool.push(this.mouseGroup.create(0, 0, 'mouse'));
-      this.mousePool.push(this.mouseGroup.create(0, 0, 'mouse'));
-      this.placeMice(false);
-    }
-    this.mouseGroup.setVelocityX(-gameOptions.floppySpeed);
+
+      mouseGroup = this.physics.add.group();
+      this.mousePool = [];
+      for (let i = 0; i < maxNumberOfMice; i++) {
+        this.mousePool.push(mouseGroup.create(0, 0, 'mouse'));
+        this.mousePool.push(mouseGroup.create(0, 0, 'mouse'));
+        if (i === 0) {
+          this.placeMice(false, true);
+        }
+        else {
+          this.placeMice(false, false);
+        }
+      }
+      mouseGroup.setVelocityX(-gameOptions.floppySpeed);  
+    
 
     // DON'T HIT THE MICE
-    this.physics.add.collider(floppy, this.mouseGroup, function () {
+    this.physics.add.collider(floppy, mouseGroup, function () {
       death.play();
       die();
     });
@@ -134,13 +144,20 @@ export default new Phaser.Class({
   // THE ORIGINAL MICE WOULD PASS IN FALSE TO NOT INCREASE SCORE
   // EVERY NEW ROW OF MICE WOULD PASS TRUE WHICH WOULD INCREASE SCORE
   // SINCE THEY WERE CREATED BECAUSE ANOTHER ROW PASSED
-  placeMice: function (addScore) {
+  placeMice: function (addScore, first) {
     let rightMost = this.getRightMostMouse();
     let mouseHoleHeight = Phaser.Math.Between(gameOptions.mouseHole[0], gameOptions.mouseHole[1]);
     let mouseHolePosition = Phaser.Math.Between(gameOptions.minMouseHeight + mouseHoleHeight / 2, 650 - gameOptions.minMouseHeight - mouseHoleHeight / 2);
     // TOP MOUSE
-    this.mousePool[0].x = rightMost + this.mousePool[0].getBounds().width + Phaser.Math.Between(gameOptions.mouseDistance[0], gameOptions.mouseDistance[1]);
-    this.mousePool[0].y = mouseHolePosition - mouseHoleHeight / 2;
+    if (first) {
+      this.mousePool[0].x = 1000;
+      this.mousePool[0].y = mouseHolePosition - mouseHoleHeight / 2;
+    }
+    else {
+      this.mousePool[0].x = rightMost + this.mousePool[0].getBounds().width + Phaser.Math.Between(gameOptions.mouseDistance[0], gameOptions.mouseDistance[1]);
+      this.mousePool[0].y = mouseHolePosition - mouseHoleHeight / 2;
+    }
+
     this.mousePool[0].setScale(0.75);
     this.mousePool[0].setOrigin(0, 1);
     // SHOWS THE MONITOR INSTEAD OF THE BOTTOM MOUSE ONCE THEY REACH A CERTAIN SCORE
@@ -150,10 +167,13 @@ export default new Phaser.Class({
       monitor = this.physics.add.sprite(monitorx, monitory, 'compMonitor');
       monitor.setOrigin(0, 0);
       monitor.setVelocityX(-gameOptions.floppySpeed);
+      monitor.body.immovable = true;
       let monitorEffect = new Audio(monitorSound)
       this.physics.add.collider(floppy, monitor, function () {
         monitorEffect.play();
         floppy.destroy();
+        mouseGroup.setVelocityX(0); 
+        monitor.setVelocityX(0);
         loadGame();
       });
     }
@@ -181,28 +201,31 @@ export default new Phaser.Class({
         },
         callbackScope: this
       })
-
     }
   },
   // FUNCTION THAT RETURNS THE ROW OF THE RIGHTMOST MOUSE
   getRightMostMouse: function () {
     let rightMostMouse = 0;
-    this.mouseGroup.getChildren().forEach(function (mouse) {
+    mouseGroup.getChildren().forEach(function (mouse) {
       rightMostMouse = Math.max(rightMostMouse, mouse.x);
     });
     return rightMostMouse;
   },
   // THE FUNCTION THAT MAKES YA BOY BOUNCE
   bounce: function () {
+    if (!gameStarted) {
+      gameStarted = true;
+      floppy.body.gravity.y = gameOptions.floppyGravity;
+    }
     floppy.body.velocity.y += -gameOptions.floppyThrustPower;
   },
   update: function () {
     // PLACES MORE MOUSE ROWS IN POOL AND MAKES MORE MICE IF NEEDED
-    this.mouseGroup.getChildren().forEach(function (mouse) {
+    mouseGroup.getChildren().forEach(function (mouse) {
       if (mouse.getBounds().right < 0) {
         this.mousePool.push(mouse);
         if (this.mousePool.length == 2) {
-          this.placeMice(true);
+          this.placeMice(true, false);
         }
       }
     }, this)
