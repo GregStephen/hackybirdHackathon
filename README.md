@@ -8,7 +8,7 @@ A game created with Phaser 3. The user controls a floppy disc, dodging computer 
 #### Main Menu
 Allows the user to pick a level difficulty as well instructions for the game.
 
-![Main Menu](assets/screenshots/Main_Menu.JPG)
+![Main Menu](src/assets/screenshots/main_menu.JPG)
 
 ## Created by Greg Stephen
 
